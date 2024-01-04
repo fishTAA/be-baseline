@@ -1,10 +1,7 @@
 import { Collection, Db, MongoClient, ObjectId} from 'mongodb';
 import { timeLog } from 'console';
+import { card, station, user } from './models';
 
-interface station{
-    stationName: string;
-
-  }
 
 const client = new MongoClient("mongodb+srv://tom31aguila:bBMF3lnMspgrZmh8@cluster0.q7hahj8.mongodb.net/");
 
@@ -26,15 +23,48 @@ export const getConnection = async (): Promise<Db> => {
   const dbConnection: Db = conn.db("metroDB");
   return dbConnection;
 }
+export const findData = async (collection:string,cardNum: number): Promise<card | null > => {
+ 
+  return getConnection().then(async (db)=> {
+    const c = db.collection<card>(collection).findOne({cardNum})
+    console.log(c)
+    return c;
+  }).catch((e)=> {
+    console.log("error", e)
+    return null;
+  })
 
-export const findStation = async (collection:string,stationName: string): Promise<station | null > => {
-    return getConnection().then(async (db)=> {
-      const c = db.collection<station>(collection).findOne({stationName})
-      console.log(c)
-      return c;
-    }).catch((e)=> {
-      console.log("error", e)
-      return null;
-    })
-  
-  }
+}
+export const findUser = async (user: string): Promise<user | null > => {
+  return getConnection().then(async (db)=> {
+    const c = db.collection<user>("Users").findOne({userName:user})
+    console.log(c)
+    return c;
+  }).catch((e)=> {
+    console.log("error", e)
+    return null;
+  })
+
+}
+// export const findData = async (collection:string,dataname: string) => {
+//     return getConnection().then(async (db)=> {
+//       // const query = {cardNum:dataname}
+//       const c = db.collection(collection).findOne({dataname})
+//       console.log(c)
+//       return c;
+//     }).catch((e)=> {
+//       console.log("error", e)
+//       return null;
+//     })
+//   }
+  // export const findData = async <T>(collection: string, documentname: string): Promise<T | null> => {
+  //   try {
+  //     const db = await getConnection();
+  //     const result = await db.collection<T>(collection).findOne({name:documentname });
+  //     console.log(result);
+  //     return result;
+  //   } catch (e) {
+  //     console.log("error", e);
+  //     return null;
+  //   }
+  // };

@@ -44,6 +44,16 @@ export const findUser = async (user: string): Promise<user | null > => {
     console.log("error", e)
     return null;
   })
+}
+export const findStation = async (station: string): Promise<station | null > => {
+  return getConnection().then(async (db)=> {
+    const c = db.collection<station>("Stations").findOne({name:station})
+    console.log(c)
+    return c;
+  }).catch((e)=> {
+    console.log("error", e)
+    return null;
+  })
 
 }
 // export const findData = async (collection:string,dataname: string) => {

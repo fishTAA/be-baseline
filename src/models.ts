@@ -1,7 +1,8 @@
 export interface station{
     name: string;
     id: number;
-    geoLocation:[number,number]
+    geoLocation:[number,number];
+    connections:[[number,number]];
   }
 export interface card{
     cardNum: number;

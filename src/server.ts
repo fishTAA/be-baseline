@@ -1,7 +1,7 @@
 //Importing Libraries
 import express from "express";
 import * as dotenv from "dotenv";
-import { findData, findUser, getConnection } from "./db";
+import { findData, findStation, findUser, getConnection } from "./db";
 import { card } from "./models";
 import jwt from "jsonwebtoken";
 dotenv.config();
@@ -29,6 +29,18 @@ const startServer = (app: express.Express) => {
     }
     const carNum = +documnetName;
     const document = await findData(collection, carNum);
+    if (document) {
+      res.json(document);
+    } else {
+      res.status(404).json({ error: "Station not found." });
+    }
+  });
+  app.get("/findstation", async (req, res) => {
+    const documnetName = req.query.station as string;
+    if (!documnetName) {
+      return res.status(400).json({ error: "Station parameter is required." });
+    }
+    const document = await findStation(documnetName);
     if (document) {
       res.json(document);
     } else {

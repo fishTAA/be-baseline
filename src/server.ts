@@ -35,12 +35,12 @@ const startServer = (app: express.Express) => {
       res.status(404).json({ error: "Station not found." });
     }
   });
-  app.get("/findstation", async (req, res) => {
-    const documnetName = req.query.station as string;
+  app.post("/findstation", async (req, res) => {
+    const documnetName = req.body.station  ;
     if (!documnetName) {
       return res.status(400).json({ error: "Station parameter is required." });
     }
-    const document = await findStation(documnetName);
+    const document = await findStation(documnetName as [number,number] );
     if (document) {
       res.json(document);
     } else {

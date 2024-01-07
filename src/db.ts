@@ -26,7 +26,7 @@ export const getConnection = async (): Promise<Db> => {
 export const findData = async (collection:string,cardNum: number): Promise<card | null > => {
  
   return getConnection().then(async (db)=> {
-    const c = db.collection<card>(collection).findOne({cardNum})
+    const c = await db.collection<card>(collection).findOne({cardNum})
     console.log(c)
     return c;
   }).catch((e)=> {
@@ -37,7 +37,7 @@ export const findData = async (collection:string,cardNum: number): Promise<card 
 }
 export const findUser = async (user: string): Promise<user | null > => {
   return getConnection().then(async (db)=> {
-    const c = db.collection<user>("Users").findOne({userName:user})
+    const c = await db.collection<user>("Users").findOne({userName:user})
     console.log(c)
     return c;
   }).catch((e)=> {
@@ -45,16 +45,17 @@ export const findUser = async (user: string): Promise<user | null > => {
     return null;
   })
 }
-export const findStation = async (station: string): Promise<station | null > => {
+export const findStation = async (loc: [number,number]): Promise<station | null > => {
   return getConnection().then(async (db)=> {
-    const c = db.collection<station>("Stations").findOne({name:station})
-    console.log(c)
+    console.log(loc)
+    // const test = [14.542345632258723,121.01939792931009]
+    const c = await db.collection<station>("Stations").findOne({geoLocation:loc})
+    console.log("return obj",c)
     return c;
   }).catch((e)=> {
-    console.log("error", e)
+    console.log("error test", e)
     return null;
   })
-
 }
 // export const findData = async (collection:string,dataname: string) => {
 //     return getConnection().then(async (db)=> {

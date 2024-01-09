@@ -36,11 +36,11 @@ const startServer = (app: express.Express) => {
     }
   });
   app.post("/findstation", async (req, res) => {
-    const documnetName = req.body.station  ;
+    const documnetName = req.body.station;
     if (!documnetName) {
       return res.status(400).json({ error: "Station parameter is required." });
     }
-    const document = await findStation(documnetName as [number,number] );
+    const document = await findStation(documnetName as [number, number]);
     if (document) {
       res.json(document);
     } else {
@@ -52,13 +52,12 @@ const startServer = (app: express.Express) => {
     const username = req.body.username as string;
     const password = req.body.pass as string;
     const user = await findUser(username);
-    if (user&&user?.password === password) {
+    if (user && user?.password === password) {
       const token = jwt.sign(
         {
           username: user?.userName,
           firstname: user?.firstName,
           lastname: user?.lastName,
-          email: user?.email
         },
         JWT_SECRET,
         {

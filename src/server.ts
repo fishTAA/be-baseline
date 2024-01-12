@@ -1,7 +1,14 @@
 //Importing Libraries
 import express from "express";
 import * as dotenv from "dotenv";
-import { findData, findStation, findUser, getConnection } from "./db";
+import {
+  cardgen,
+  checkcard,
+  findData,
+  findStation,
+  findUser,
+  getConnection,
+} from "./db";
 import { card } from "./models";
 import jwt from "jsonwebtoken";
 dotenv.config();
@@ -49,7 +56,7 @@ const startServer = (app: express.Express) => {
   });
 
   app.post("/user/login", async (req, res) => {
-    const username = req.body.username as string;
+    const username = req.body.username.replace(/\s/g, "") as string;
     const password = req.body.pass as string;
     const user = await findUser(username);
     if (user && user?.password === password) {
@@ -61,7 +68,7 @@ const startServer = (app: express.Express) => {
         },
         JWT_SECRET,
         {
-          expiresIn: "24h",
+          expiresIn: "2h",
         }
       );
       res.status(200).send({
@@ -73,7 +80,37 @@ const startServer = (app: express.Express) => {
       });
     }
   });
-
+  app.post("/newCard", async (req, res) => {
+    try {
+      const card = req.body.cardnum as number;
+      const bal = req.body.balance as number;
+      const result = await cardgen(card, bal);
+      console.log(result);
+      if (result === null) {
+        return res.status(400);
+      } else {
+        return res.status(200).json(true);
+      }
+    } catch (e) {
+      console.error(e);
+      return res.status(400);
+    }
+  });
+  app.get("/checkcardnum", async (req, res) => {
+    try {
+      const cardnum = req.query.cardnum as string;
+      const card = +cardnum;
+      const document = await checkcard(card);
+      console.log(document);
+      if (document) {
+        res.json(true);
+      } else {
+        res.json(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
   app.listen(PORT, async () => {
     console.log(`listning on port ${PORT}`);
   });

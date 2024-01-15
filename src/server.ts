@@ -4,10 +4,12 @@ import * as dotenv from "dotenv";
 import {
   cardgen,
   checkcard,
+  deleteCard,
   findData,
   findStation,
   findUser,
   getConnection,
+  updateBalance,
 } from "./db";
 import { card } from "./models";
 import jwt from "jsonwebtoken";
@@ -106,6 +108,36 @@ const startServer = (app: express.Express) => {
         res.json(true);
       } else {
         res.json(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+  app.post("/addbal", async (req, res) => {
+    try {
+      const card = req.body.cardnum;
+      const bal = req.body.balance;
+      console.log(card, bal);
+      const document = await updateBalance(Number(card), Number(bal));
+      console.log(document);
+      if (document) {
+        res.status(200).json(true);
+      } else {
+        res.status(400).json(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+  app.post("/deletecard", async (req, res) => {
+    try {
+      const card = req.body.cardnum;
+      const document = await deleteCard(Number(card));
+      console.log(document);
+      if (document) {
+        res.status(200).json(true);
+      } else {
+        res.status(400).json(false);
       }
     } catch (e) {
       console.error(e);

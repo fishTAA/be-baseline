@@ -1,5 +1,5 @@
 import { Collection, Db, MongoClient, ObjectId } from "mongodb";
-import { timeLog } from "console";
+import { error, timeLog } from "console";
 import { card, station, user } from "./models";
 
 const client = new MongoClient(
@@ -125,10 +125,50 @@ export const checkcard = (cardnum: number) => {
     });
 };
 
-export const updateBalance = (cardnum: number, balance: number) => {
-  return getConnection().then(async (db) => {
-    const res = await db
+export const updateBalance = async (cardnum: number, balance: number) => {
+  return getConnection()
+    .then(async (db) => {
+      const updateResult = await db
+        .collection("CardsAcc")
+        .updateOne({ cardNum: cardnum }, { $set: { Balance: balance } });
+      console.log("updating", cardnum, balance);
+      if (updateResult.modifiedCount > 0) {
+        // The update was successful
+        console.log(updateResult);
+        return true;
+      } else {
+        // No document was modified, indicating the update was unsuccessful
+        console.log(updateResult);
+        return false;
+      }
+    })
+    .catch((error) => {
+      console.error("Error updating balance:", error);
+      // Handle the error or rethrow it based on your requirements
+      throw error;
+    });
+};
+export const deleteCard = async (cardnum: number) => {
+  try {
+    const db = await getConnection();
+    const deleteResult = await db
       .collection("CardsAcc")
-      .findOneAndUpdate({ cardNum: cardnum }, { $set: { Balance: balance } });
-  });
+      .deleteOne({ cardNum: cardnum });
+
+    console.log("deleting", cardnum);
+
+    if (deleteResult.deletedCount > 0) {
+      // The deletion was successful
+      console.log(deleteResult);
+      return true;
+    } else {
+      // No document was deleted, indicating the deletion was unsuccessful
+      console.log(deleteResult);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error deleting card:", error);
+    // Handle the error or rethrow it based on your requirements
+    throw error;
+  }
 };

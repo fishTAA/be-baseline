@@ -117,6 +117,8 @@ export const checkcard = (cardnum: number) => {
       });
       if (res != null) {
         return true;
+      }else{
+        return false
       }
     })
     .catch((e) => {

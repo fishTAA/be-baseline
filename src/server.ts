@@ -13,6 +13,7 @@ import {
 } from "./db";
 import { card } from "./models";
 import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
@@ -129,6 +130,27 @@ const startServer = (app: express.Express) => {
       console.error(e);
     }
   });
+  app.post("/updateSettingfare", async (req, res) => {
+    try {
+      const newval = req.body.fare;
+      const db = await getConnection();
+      const data = await db
+        .collection("settings")
+        .updateOne({ Title: "Settings" }, { $set: { Fare: newval } });
+      // console.log("res",articles)
+      if (data.modifiedCount > 0) {
+        // The update was successful
+        console.log("dadada", data);
+        res.status(200).send("Succesfully updated");
+      } else {
+        // No document was modified, indicating the update was unsuccessful
+        console.log(data);
+        res.status(400).send("Error updating fare");
+      }
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  });
   app.post("/deletecard", async (req, res) => {
     try {
       const card = req.body.cardnum;
@@ -141,6 +163,20 @@ const startServer = (app: express.Express) => {
       }
     } catch (e) {
       console.error(e);
+    }
+  });
+  app.get("/settings", async (req, res) => {
+    try {
+      await getConnection().then(async (db) => {
+        const data = await db
+          .collection("settings")
+          .findOne({ Title: "Settings" });
+        // console.log("res",articles)
+        res.status(200).json(data);
+      });
+    } catch (e) {
+      console.error("Error fetching settings:", e);
+      res.status(500).send("Internal Server Error");
     }
   });
   app.listen(PORT, async () => {

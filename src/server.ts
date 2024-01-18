@@ -33,11 +33,11 @@ const startServer = (app: express.Express) => {
 
   app.get("/specific/:collection", async (req, res) => {
     const collection = req.params.collection;
-    const documnetName = req.query.title as string;
+    const documnetName = req.query.title;
     if (!documnetName) {
       return res.status(400).json({ error: "Station parameter is required." });
     }
-    const carNum = +documnetName;
+    const carNum = Number(documnetName);
     const document = await findData(collection, carNum);
     if (document) {
       res.json(document);
@@ -133,6 +133,9 @@ const startServer = (app: express.Express) => {
   app.post("/updateSettingfare", async (req, res) => {
     try {
       const newval = req.body.fare;
+      if (newval < 0) {
+        return res.status(400).send("Cannot be a negative number");
+      }
       const db = await getConnection();
       const data = await db
         .collection("settings")
@@ -141,11 +144,11 @@ const startServer = (app: express.Express) => {
       if (data.modifiedCount > 0) {
         // The update was successful
         console.log("dadada", data);
-        res.status(200).send("Succesfully updated");
+        return res.status(200).send("Succesfully updated");
       } else {
         // No document was modified, indicating the update was unsuccessful
         console.log(data);
-        res.status(400).send("Error updating fare");
+        return res.status(400).send("Error updating fare");
       }
     } catch (error) {
       res.status(400).send(error);

@@ -57,7 +57,33 @@ const startServer = (app: express.Express) => {
       res.status(404).json({ error: "Station not found." });
     }
   });
+  app.post("/check-token", (req, res) => {
+    const { token } = req.body;
 
+    // Check if the token is present
+    if (!token) {
+      return res
+        .status(400)
+        .json({ isValid: false, message: "Token is missing" });
+    }
+
+    try {
+      // Verify the token using the secret key
+      const decoded = jwt.verify(token, JWT_SECRET);
+      console.log("decoded", decoded);
+
+      // If verification is successful, the token is considered valid
+      res.json({ isValid: true, message: "Token is valid" });
+    } catch (error) {
+      // If verification fails, the token is considered invalid or tampered with
+      console.log(error, token);
+
+      res.json({
+        isValid: false,
+        message: "Token is invalid or tampered with",
+      });
+    }
+  });
   app.post("/user/login", async (req, res) => {
     const username = req.body.username.replace(/\s/g, "") as string;
     const password = req.body.pass as string;

@@ -5,8 +5,12 @@ export const NewCard = async (req: express.Request, res: express.Response) => {
   try {
     const card = req.body.cardnum as number;
     const bal = req.body.balance as number;
+    if (card === null) {
+      return res.status(400);
+    }
     const result = await cardgen(card, bal);
     console.log(result);
+
     if (result === null) {
       return res.status(400);
     } else {

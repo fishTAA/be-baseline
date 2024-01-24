@@ -6,7 +6,7 @@ export const GetSetting = async (
   res: express.Response
 ) => {
   try {
-    console.log("getting setting")
+    console.log("getting setting");
     await getConnection().then(async (db) => {
       const data = await db
         .collection("settings")
@@ -25,7 +25,7 @@ export const UpdateFare = async (
 ) => {
   try {
     const newval = req.body.fare;
-    if (newval < 0) {
+    if (newval <= 0) {
       return res.status(400).send("Cannot be a negative number");
     }
     const db = await getConnection();

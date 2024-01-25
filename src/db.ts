@@ -117,8 +117,8 @@ export const checkcard = (cardnum: number) => {
       });
       if (res != null) {
         return true;
-      }else{
-        return false
+      } else {
+        return false;
       }
     })
     .catch((e) => {
@@ -175,3 +175,23 @@ export const deleteCard = async (cardnum: number) => {
   }
 };
 
+export const createStation = async (
+  name: string,
+  id: number,
+  geoLocation: [number, number],
+  connections: [[number, number]]
+) => {
+  try {
+    const db = await getConnection();
+    const res = await db.collection("Stations").insertOne({
+      name: name,
+      id: id,
+      geoLocation: geoLocation,
+      connections: connections,
+    });
+    return { id: res.insertedId };
+  } catch (e) {
+    console.log("error test", e);
+    return null;
+  }
+};

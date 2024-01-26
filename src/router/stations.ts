@@ -6,6 +6,4 @@ export default (router: express.Router) => {
   router.get("/specific/:collection", FindbyCoor);
   router.post("/findstation", FindbyCoor);
   router.post("/newstation", isAuthenticated,NewStation);
-
-  
 };

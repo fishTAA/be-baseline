@@ -5,9 +5,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_Secret || "";
+const JWT_SECRET = process.env.JWT_SECRET || "";
 
 export const Login = async (req: express.Request, res: express.Response) => {
+  console.log("secret", JWT_SECRET);
   const username = req.body.username.replace(/\s/g, "") as string;
   const password = req.body.pass as string;
   const user = await findUser(username);

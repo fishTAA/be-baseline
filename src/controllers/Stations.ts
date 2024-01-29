@@ -20,15 +20,26 @@ export const NewStation = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const { name, id, geoLocation, connections } = req.body;
+  const { id, name, geoLocation, connections } = req.body;
 
   try {
+    // if (
+    //   name !== undefined &&
+    //   id !== undefined &&
+    //   geoLocation !== undefined &&
+    //   connections !== undefined
+    // ) {
+    console.log("name", name);
+    console.log("id", id);
+    console.log("geo", geoLocation);
+    console.log("con", connections);
     const result = await createStation(name, id, geoLocation, connections);
     if (result === null) {
       return res.status(400);
     } else {
       return res.status(200).json(true);
     }
+    // }
   } catch (e) {
     console.error(e);
     return res.status(400);

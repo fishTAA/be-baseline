@@ -5,5 +5,5 @@ import { isAuthenticated } from "../middleware";
 export default (router: express.Router) => {
   router.get("/specific/:collection", FindbyCoor);
   router.post("/findstation", FindbyCoor);
-  router.post("/newstation", isAuthenticated,NewStation);
+  router.post("/newstation", NewStation);
 };

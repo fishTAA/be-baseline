@@ -105,3 +105,29 @@ export const CheckStationDistance = async (
     return res.status(400);
   }
 };
+export const DeleteStation = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const stationid = req.params.id;
+  console.log("deleting Station:", stationid);
+  if (!stationid) {
+    return res.status(400).json({ error: "Invalid Station ID parameter" });
+  }
+  try {
+    const objectId = new ObjectId(String(stationid));
+    const query = { _id: objectId };
+
+    const deleteResult = await getConnection().then(async (db) => {
+      return await db.collection("Stations").deleteOne(query);
+    });
+
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).json({ error: "Embedding not found" });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (e) {
+    console.error(e);
+  }
+};

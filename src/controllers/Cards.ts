@@ -91,6 +91,6 @@ export const CardCollection = async (
   if (document) {
     res.json(document);
   } else {
-    res.status(404).json({ error: "Station not found." });
+    res.status(404).json({ error: "Card not found." });
   }
 };

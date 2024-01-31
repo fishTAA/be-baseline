@@ -3,7 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 
 dotenv.config();
-const JWT_SECRET = process.env.JWT_Secret || "";
+const JWT_SECRET = process.env.JWT_SECRET || "";
 
 export const isAuthenticated = async (
   req: express.Request,

@@ -1,5 +1,6 @@
 import express from "express";
-import { cardgen, checkcard, deleteCard, findData, updateBalance } from "../db";
+import { cardgen, findData} from "../db";
+import { checkcard, deleteCard, updateBalance } from "../dbFunctions/cardDB";
 
 export const NewCard = async (req: express.Request, res: express.Response) => {
   try {

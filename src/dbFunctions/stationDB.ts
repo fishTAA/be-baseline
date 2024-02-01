@@ -101,7 +101,7 @@ export const SaveConnections = async (
   }
 };
 
-const DeleteConnection = async (connections: string[], deletedId: string) => {
+export const DeleteConnection = async (connections: string[], deletedId: string) => {
   try {
     const db = await getConnection();
     const collection = db.collection("Stations"); // Replace with your collection name
@@ -173,6 +173,60 @@ export const getExistingConnections = async (
     return existingDocument ? existingDocument.connections : null;
   } catch (error) {
     console.error(`Error retrieving existing connections: ${error}`);
+    return null;
+  }
+};
+
+export const updatestation = async (
+  name: string,
+  id: number,
+  geoLocation: [number, number],
+  connections: [string],
+  objectId: ObjectId
+) => {
+  try {
+    return await getConnection().then(async (db) => {
+      const res = await db.collection("Stations").updateOne(
+        { _id: objectId },
+        {
+          $set: {
+            name: name,
+            id: id,
+            geoLocation: geoLocation,
+            connections: connections,
+          },
+        }
+      );
+      if (res.modifiedCount > 0) {
+        // The update was successful
+        console.log(res);
+        return true;
+      } else {
+        // No document was modified, indicating the update was unsuccessful
+        console.log(res);
+        return false;
+      }
+    });
+  } catch (error) {}
+};
+
+export const createStation = async (
+  name: string,
+  id: number,
+  geoLocation: [number, number],
+  connections: [string]
+) => {
+  try {
+    const db = await getConnection();
+    const res = await db.collection("Stations").insertOne({
+      name: name,
+      id: id,
+      geoLocation: geoLocation,
+      connections: connections,
+    });
+    return res.insertedId;
+  } catch (e) {
+    console.log("error test", e);
     return null;
   }
 };

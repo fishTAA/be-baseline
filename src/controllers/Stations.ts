@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  CheckDistance,
   createStation,
   findStation,
   getConnection,
@@ -8,6 +7,11 @@ import {
 } from "../db";
 import { ObjectId } from "mongodb";
 import { station } from "../models";
+import {
+  CheckDistance,
+  SaveConnections,
+  manageConnections,
+} from "../dbFunctions/stationDB";
 export const FindbyCoor = async (
   req: express.Request,
   res: express.Response
@@ -44,7 +48,8 @@ export const NewStation = async (
     if (result === null) {
       return res.status(400);
     } else {
-      return res.status(200).json(true);
+      await SaveConnections(connections, String(result));
+      return res.status(200).json(result);
     }
     // }
   } catch (e) {
@@ -52,17 +57,21 @@ export const NewStation = async (
     return res.status(400);
   }
 };
+
 export const UpdateStation = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const { name, id, geoLocation, connections, _id } = req.body;
-  const objectId = new ObjectId(_id);
+  const { name, id, geoLocation, connections, objid } = req.body;
+  const objectId = new ObjectId(objid);
+  console.log(name, id, geoLocation, connections, objid);
   try {
     const query = { _id: objectId };
     const findResult = await getConnection().then(async (db) => {
       return await db.collection("Stations").findOne(query);
     });
+    await manageConnections(connections, String(objectId));
+
     console.log(findResult);
     if (!findResult) {
       return res.status(400).send({ message: "Document not Found" });
@@ -132,76 +141,6 @@ export const DeleteStation = async (
     console.error(e);
   }
 };
-
-// export const CheckConnections=()=>{
-//  // Function to add a station to another station's connections
-// function addStationToConnection(stationCollection, sourceStationObjid, targetStationObjid) {
-//   // Find stations based on objids
-//   const sourceStation = stationCollection.find(station => station.objid === sourceStationObjid);
-//   const targetStation = stationCollection.find(station => station.objid === targetStationObjid);
-
-//   // Check if both stations exist in the collection
-//   if (!sourceStation || !targetStation) {
-//       console.error("Stations not found in the collection");
-//       return;
-//   }
-
-//   // Check if the target station is not already in the connections of the source station
-//   if (!sourceStation.connections.includes(targetStation.objid)) {
-//       // Add the target station's objid to the connections of the source station
-//       sourceStation.connections.push(targetStation.objid);
-
-//       // Also, add the source station's objid to the connections of the target station
-//       targetStation.connections.push(sourceStation.objid);
-
-//       console.log(`${sourceStation.name} and ${targetStation.name} are now connected.`);
-//   } else {
-//       console.log(`${sourceStation.name} and ${targetStation.name} are already connected.`);
-//   }
-// }
-
-// // Function to remove a station from another station's connections
-// function removeStationFromConnection(stationCollection:any, sourceStationObjid:string, targetStationObjid:string) {
-//   // Find stations based on objids
-//   const sourceStation = stationCollection.find(station => station.objid === sourceStationObjid);
-//   const targetStation = stationCollection.find(station => station.objid === targetStationObjid);
-
-//   // Check if both stations exist in the collection
-//   if (!sourceStation || !targetStation) {
-//       console.error("Stations not found in the collection");
-//       return;
-//   }
-
-//   // Check if the target station is in the connections of the source station
-//   const targetIndex = sourceStation.connections.indexOf(targetStation.objid);
-//   if (targetIndex !== -1) {
-//       // Remove the target station's objid from the connections of the source station
-//       sourceStation.connections.splice(targetIndex, 1);
-
-//       // Also, remove the source station's objid from the connections of the target station
-//       const sourceIndex = targetStation.connections.indexOf(sourceStation.objid);
-//       targetStation.connections.splice(sourceIndex, 1);
-
-//       console.log(`${sourceStation.name} and ${targetStation.name} are no longer connected.`);
-//   } else {
-//       console.log(`${sourceStation.name} and ${targetStation.name} are not connected.`);
-//   }
-// }
-
-// // Example usage:
-// const stationCollection = [
-//   { name: "StationA", loc: { coordinates: [0, 0] }, connections: [2], objid: 1 },
-//   { name: "StationB", loc: { coordinates: [1, 1] }, connections: [1], objid: 2 },
-//   { name: "StationC", loc: { coordinates: [2, 2] }, connections: [], objid: 3 }
-// ];
-
-// // // Add StationC to the connections of StationA
-// // addStationToConnection(stationCollection, 1, 3);
-
-// // // Remove StationB from the connections of StationA
-// // removeStationFromConnection(stationCollection, 1, 2);
-
-// }
 
 async function addStationToConnection(
   sourceStationObjid: string,

@@ -190,7 +190,7 @@ export const createStation = async (
       geoLocation: geoLocation,
       connections: connections,
     });
-    return { id: res.insertedId };
+    return res.insertedId;
   } catch (e) {
     console.log("error test", e);
     return null;
@@ -228,67 +228,4 @@ export const updatestation = async (
       }
     });
   } catch (error) {}
-};
-
-export const CheckDistance = (
-  arrstation: Array<station>,
-  stationcoor: [number, number]
-) => {
-  const Stations = arrstation;
-  function calculateDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number {
-    const earthRadius = 6371; // Earth radius in kilometers
-
-    // Convert latitude and longitude from degrees to radians
-    const lat1Rad = toRadians(lat1);
-    const lon1Rad = toRadians(lon1);
-    const lat2Rad = toRadians(lat2);
-    const lon2Rad = toRadians(lon2);
-
-    // Calculate the differences
-    const dlat = lat2Rad - lat1Rad;
-    const dlon = lon2Rad - lon1Rad;
-
-    // Haversine formula
-    const a =
-      Math.sin(dlat / 2) ** 2 +
-      Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(dlon / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    // Calculate distance in meters
-    const distance = earthRadius * c * 1000;
-
-    return distance;
-  }
-
-  function toRadians(degrees: number): number {
-    return degrees * (Math.PI / 180);
-  }
-
-  function isWithin500Meters(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): boolean {
-    const distance = calculateDistance(lat1, lon1, lat2, lon2);
-    return distance <= 500;
-  }
-
-  const res = Stations.map((station) => {
-    const result = isWithin500Meters(
-      stationcoor[0],
-      stationcoor[1],
-      station.geoLocation[0],
-      station.geoLocation[1]
-    );
-    return result ? station._id : null;
-  });
-
-  // Filter out null values and return only the station IDs within 500 meters
-  return res.filter((stationId) => stationId !== null) as string[];
 };

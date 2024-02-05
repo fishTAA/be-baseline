@@ -7,9 +7,11 @@ import {
   DeleteConnection,
   SaveConnections,
   createStation,
+  getSingleStation,
   manageConnections,
   updatestation,
 } from "../dbFunctions/stationDB";
+import { calculateFare } from "../dbFunctions/farecalculation";
 export const FindbyCoor = async (
   req: express.Request,
   res: express.Response
@@ -118,7 +120,7 @@ export const DeleteStation = async (
   res: express.Response
 ) => {
   const stationid = req.params.id;
-  const connections = req.body.connections
+  const connections = req.body.connections;
   console.log("deleting Station:", stationid);
   if (!stationid) {
     return res.status(400).json({ error: "Invalid Station ID parameter" });
@@ -134,10 +136,57 @@ export const DeleteStation = async (
     if (deleteResult.deletedCount === 0) {
       return res.status(404).json({ error: "Embedding not found" });
     }
-    await DeleteConnection(connections,stationid)
+    await DeleteConnection(connections, stationid);
     return res.status(200).json({ success: true });
   } catch (e) {
     console.error(e);
   }
 };
+export const Tapin = async (req: express.Request, res: express.Response) => {
+  const cardNum = req.body.cardNum;
+  const stationId = req.body.stationId;
+  const db = await getConnection();
+  const objid = new ObjectId(stationId);
+  try {
+    const card = await db.collection("CardsAcc").findOne({ cardNum });
+    const station = await db.collection("Stations").findOne({ _id: objid });
 
+    if (card && station) {
+      await db
+        .collection("CardsAcc")
+        .updateOne({ cardNum }, { $set: { state: String(station._id) } });
+      res.status(200).json({ message: "Tap in successful", card });
+    } else {
+      res.status(404).json({ message: "Card or station not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export const Tapout = async (req: express.Request, res: express.Response) => {
+  const cardNum = req.body.cardNum;
+  const stationId = req.body.stationId;
+  const db = await getConnection();
+
+  try {
+    const card = await db.collection("CardsAcc").findOne({ cardNum });
+
+    if (card) {
+      const fare = calculateFare(card.state, stationId);
+      const bal = card.Balance - Number(await fare);
+      await db
+        .collection("CardsAcc")
+        .updateOne(
+          { cardNum },
+          { $set: { state: null }, $inc: { Balance: bal } }
+        );
+      res.status(200).json({ message: "Tap out successful", fare, card });
+    } else {
+      res.status(404).json({ message: "Card or station not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

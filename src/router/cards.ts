@@ -14,4 +14,5 @@ export default (router: express.Router) => {
   router.post("/addbal", isAuthenticated, AddCardBal);
   router.get("/specific/:collection", CardCollection);
   router.delete("/deletecard", isAuthenticated, DeleteCard);
+  router.get("/tapin",)
 };

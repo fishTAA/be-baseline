@@ -1,6 +1,7 @@
+import { promises } from "dns";
 import { getConnection } from "../db";
 import { station } from "../models";
-import { ObjectId } from "mongodb";
+import { ObjectId, WithId } from "mongodb";
 
 export const CheckDistance = (
   arrstation: Array<station>,
@@ -101,7 +102,10 @@ export const SaveConnections = async (
   }
 };
 
-export const DeleteConnection = async (connections: string[], deletedId: string) => {
+export const DeleteConnection = async (
+  connections: string[],
+  deletedId: string
+) => {
   try {
     const db = await getConnection();
     const collection = db.collection("Stations"); // Replace with your collection name
@@ -227,6 +231,23 @@ export const createStation = async (
     return res.insertedId;
   } catch (e) {
     console.log("error test", e);
+    return null;
+  }
+};
+
+export const getSingleStation = async (_id: string) => {
+  const objid = new ObjectId(_id);
+
+  try {
+    const db = await getConnection();
+
+    const station = await db.collection("Stations").findOne({
+      _id: objid,
+    });
+
+    return station;
+  } catch (e) {
+    console.error("Error getting station:", e);
     return null;
   }
 };

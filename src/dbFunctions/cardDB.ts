@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { getConnection } from "../db";
 
 export const deleteCard = async (cardnum: number) => {
@@ -61,6 +62,26 @@ export const deleteCard = async (cardnum: number) => {
         });
         if (res != null) {
           return true;
+        } else {
+          return false;
+        }
+      })
+      .catch((e) => {
+        console.log("error test", e);
+        return null;
+      });
+  };
+
+  export const getSingleCard = (_id: string) => {
+    const objid = new ObjectId(_id)
+
+    return getConnection()
+      .then(async (db) => {
+        const res = await db.collection("CardsAcc").findOne({
+          _id: objid,
+        });
+        if (res != null) {
+          return res;
         } else {
           return false;
         }

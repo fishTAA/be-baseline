@@ -6,6 +6,7 @@ import { ObjectId, WithId } from "mongodb";
 interface Station {
   _id: ObjectId;
   name: string;
+  geoLocation: [number, number];
   connections: string[];
 }
 
@@ -39,7 +40,8 @@ export async function calculateFare(
     }
 
     // Replace with your actual fare calculation logic
-    const fare = path.length * 2; // Sample fare calculation (replace with your logic)
+    const fare = calculateTotalDistance(path); // Sample fare calculation (replace with your logic)
+    console.log("fare", fare);
     return fare;
   } catch (error) {
     console.error(error);
@@ -83,4 +85,53 @@ async function dfs(
 
   path.pop();
   return [];
+}
+
+// Function to calculate Haversine distance between two geo locations
+function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  // Implementation of the Haversine formula
+  const R = 6371; // Radius of Earth in kilometers
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+  return distance;
+}
+
+// Function to calculate total distance of a path using Haversine formula
+async function calculateTotalDistance(path: string[]): Promise<number> {
+  let totalDistance = 0;
+  const db = await getConnection();
+  for (let i = 0; i < path.length - 1; i++) {
+    const current = path[i];
+    const next = path[i + 1];
+
+    const currentStation = await db
+      .collection<Station>("Stations")
+      .findOne({ _id: new ObjectId(current) });
+
+    const nextStation = await db
+      .collection<Station>("Stations")
+      .findOne({ _id: new ObjectId(next) });
+
+    if (currentStation && nextStation) {
+      const [lat1, lon1] = currentStation.geoLocation.map(Number);
+      const [lat2, lon2] = nextStation.geoLocation.map(Number);
+
+      totalDistance += haversineDistance(lat1, lon1, lat2, lon2);
+    }
+  }
+
+  return totalDistance;
 }

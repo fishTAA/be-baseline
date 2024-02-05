@@ -173,13 +173,13 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
     const card = await db.collection("CardsAcc").findOne({ cardNum });
 
     if (card) {
-      const fare = calculateFare(card.state, stationId);
-      const bal = card.Balance - Number(await fare);
+      const fare = await calculateFare(card.state, stationId);
+      const bal = Math.floor(fare) * 2;
       await db
         .collection("CardsAcc")
         .updateOne(
           { cardNum },
-          { $set: { state: null }, $inc: { Balance: bal } }
+          { $set: { state: null }, $inc: { Balance: -bal } }
         );
       res.status(200).json({ message: "Tap out successful", fare, card });
     } else {

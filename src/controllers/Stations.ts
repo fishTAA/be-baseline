@@ -1,17 +1,17 @@
 import express from "express";
-import {
-  createStation,
-  findStation,
-  getConnection,
-  updatestation,
-} from "../db";
+import { findStation, getConnection } from "../db";
 import { ObjectId } from "mongodb";
 import { station } from "../models";
 import {
   CheckDistance,
+  DeleteConnection,
   SaveConnections,
+  createStation,
+  getSingleStation,
   manageConnections,
+  updatestation,
 } from "../dbFunctions/stationDB";
+import { calculateFare } from "../dbFunctions/farecalculation";
 export const FindbyCoor = async (
   req: express.Request,
   res: express.Response
@@ -120,6 +120,7 @@ export const DeleteStation = async (
   res: express.Response
 ) => {
   const stationid = req.params.id;
+  const connections = req.body.connections;
   console.log("deleting Station:", stationid);
   if (!stationid) {
     return res.status(400).json({ error: "Invalid Station ID parameter" });
@@ -135,107 +136,68 @@ export const DeleteStation = async (
     if (deleteResult.deletedCount === 0) {
       return res.status(404).json({ error: "Embedding not found" });
     }
-
+    await DeleteConnection(connections, stationid);
     return res.status(200).json({ success: true });
   } catch (e) {
     console.error(e);
   }
 };
-
-async function addStationToConnection(
-  sourceStationObjid: string,
-  targetStationObjid: string
-) {
+export const Tapin = async (req: express.Request, res: express.Response) => {
+  const cardNum = req.body.cardNum;
+  const stationId = req.body.stationId;
+  const db = await getConnection();
+  const objid = new ObjectId(stationId);
   try {
-    const db = await getConnection();
-    const stationsCollection = db.collection("Stations");
+    const card = await db.collection("CardsAcc").findOne({ cardNum });
+    const station = await db.collection("Stations").findOne({ _id: objid });
 
-    // Find stations based on objids
-    const sourceStation = await stationsCollection.findOne({
-      objid: sourceStationObjid,
-    });
-    const targetStation = await stationsCollection.findOne({
-      objid: targetStationObjid,
-    });
-
-    // Check if both stations exist in the collection
-    if (!sourceStation || !targetStation) {
-      console.error("Stations not found in the collection");
-      return;
-    }
-
-    // Check if the target station is not already in the connections of the source station
-    if (!sourceStation.connections.includes(targetStation.objid)) {
-      // Add the target station's objid to the connections of the source station
-      await stationsCollection.updateOne(
-        { _id: sourceStation.objid },
-        { $push: { connections: targetStation.objid } }
-      );
-
-      // Also, add the source station's objid to the connections of the target station
-      await stationsCollection.updateOne(
-        { _id: targetStation.objid },
-        { $push: { connections: sourceStation.objid } }
-      );
-
-      console.log(
-        `${sourceStation.name} and ${targetStation.name} are now connected.`
-      );
+    if (card && station) {
+      await db
+        .collection("CardsAcc")
+        .updateOne({ cardNum }, { $set: { state: String(station._id) } });
+      res.status(200).json({ message: "Tap in successful" });
     } else {
-      console.log(
-        `${sourceStation.name} and ${targetStation.name} are already connected.`
-      );
+      res.status(404).json({ message: "Card or station not found" });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
+export const Tapout = async (req: express.Request, res: express.Response) => {
+  const cardNum = req.body.cardNum;
+  const stationId = req.body.stationId;
+  const db = await getConnection();
 
-// Function to remove a station from another station's connections in MongoDB
-async function removeStationFromConnection(
-  sourceStationObjid: string,
-  targetStationObjid: string
-) {
   try {
-    const db = await getConnection();
-    const stationsCollection = db.collection("Stations");
+    const card = await db.collection("CardsAcc").findOne({ cardNum });
 
-    // Find stations based on objids
-    const sourceStation = await stationsCollection.findOne({
-      objid: sourceStationObjid,
-    });
-    const targetStation = await stationsCollection.findOne({
-      objid: targetStationObjid,
-    });
-
-    // Check if both stations exist in the collection
-    if (!sourceStation || !targetStation) {
-      console.error("Stations not found in the collection");
-      return;
-    }
-
-    // Check if the target station is in the connections of the source station
-    const targetIndex = sourceStation.connections.indexOf(targetStation.objid);
-    if (targetIndex !== -1) {
-      // Remove the target station's objid from the connections of the source station
-      await stationsCollection.updateOne(
-        { objid: sourceStation.objid },
-        { $pull: { connections: targetStation.objid } }
-      );
-
-      // Also, remove the source station's objid from the connections of the target station
-      await stationsCollection.updateOne(
-        { objid: targetStation.objid },
-        { $pull: { connections: sourceStation.objid } }
-      );
-
-      console.log(
-        `${sourceStation.name} and ${targetStation.name} are no longer connected.`
-      );
+    if (card) {
+      const fare = await calculateFare(card.state, stationId);
+      if (card.Balance < fare.fare * 2) {
+        console.log("balance", card.Balnce);
+        return res
+          .status(404)
+          .json({
+            status: false,
+            message: "Card or doesnt have enough balance",
+          });
+      }
+      const bal = Math.floor(fare.fare) * 2;
+      await db
+        .collection("CardsAcc")
+        .updateOne(
+          { cardNum },
+          { $set: { state: null }, $inc: { Balance: -bal } }
+        );
+      res
+        .status(200)
+        .json({ status: true, message: "Tap out successful", path: fare.path });
     } else {
-      console.log(
-        `${sourceStation.name} and ${targetStation.name} are not connected.`
-      );
+      res.status(404).json({ message: "Card or station not found" });
     }
-  } catch {}
-}
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

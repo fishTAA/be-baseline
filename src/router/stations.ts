@@ -4,6 +4,8 @@ import {
   DeleteStation,
   FindbyCoor,
   NewStation,
+  Tapin,
+  Tapout,
   UpdateStation,
 } from "../controllers/Stations";
 import { isAuthenticated } from "../middleware";
@@ -14,5 +16,7 @@ export default (router: express.Router) => {
   router.post("/newstation", isAuthenticated, NewStation);
   router.post("/updateStations", isAuthenticated, UpdateStation);
   router.post("/checkDistance", isAuthenticated, CheckStationDistance);
-  router.delete("/deleteStation/:id", isAuthenticated,DeleteStation);
+  router.delete("/deleteStation/:id", isAuthenticated, DeleteStation);
+  router.post("/station/tapin", Tapin);
+  router.post("/station/tapout", Tapout);
 };

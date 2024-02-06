@@ -1,5 +1,10 @@
 import express from "express";
-import { cardgen, checkcard, deleteCard, findData, updateBalance } from "../db";
+import { cardgen, findData} from "../db";
+import { checkcard, deleteCard, updateBalance } from "../dbFunctions/cardDB";
+import { getSingleStation } from "../dbFunctions/stationDB";
+import { error } from "console";
+import { WithId } from "mongodb";
+import { station } from "../models";
 
 export const NewCard = async (req: express.Request, res: express.Response) => {
   try {
@@ -94,3 +99,4 @@ export const CardCollection = async (
     res.status(404).json({ error: "Card not found." });
   }
 };
+

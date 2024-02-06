@@ -6,6 +6,7 @@ export interface station {
   connections: [string];
 }
 export interface card {
+  _id: string
   cardNum: number;
   Balance: number;
   state?: boolean;
@@ -22,4 +23,10 @@ export interface Setting {
   Balance: number;
   Km: number;
   Title: string;
+}
+export interface TapTransaction {
+  card: card;
+  station: station;
+  tapInTime: Date;
+  tapOutTime?: Date;
 }

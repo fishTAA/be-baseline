@@ -1,7 +1,7 @@
 import express from "express";
 import { findStation, getConnection } from "../db";
 import { ObjectId } from "mongodb";
-import { station } from "../models";
+import { Setting, station } from "../models";
 import {
   CheckDistance,
   DeleteConnection,
@@ -171,19 +171,32 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
 
   try {
     const card = await db.collection("CardsAcc").findOne({ cardNum });
+    const setting = await db
+      .collection("settings")
+      .findOne({ Title: "Settings" });
 
-    if (card) {
+    if (card && setting) {
       const fare = await calculateFare(card.state, stationId);
-      if (card.Balance < fare.fare * 2) {
+      const minimumfare = await setting.Fare;
+      if (card.Balance < fare.fare * minimumfare) {
         console.log("balance", card.Balnce);
-        return res
-          .status(404)
-          .json({
-            status: false,
-            message: "Card or doesnt have enough balance",
-          });
+        return res.status(404).json({
+          status: false,
+          message: "Card or doesnt have enough balance",
+        });
       }
-      const bal = Math.floor(fare.fare) * 2;
+      console.log(fare.path);
+      if (fare.path?.length === 0) {
+        return res.status(404).json({
+          status: false,
+          message: "Stations Are not Connected",
+          path: fare.path,
+        });
+      }
+      let bal = Math.floor(fare.fare) * minimumfare;
+      if (bal < minimumfare) {
+        bal = minimumfare;
+      }
       await db
         .collection("CardsAcc")
         .updateOne(
@@ -192,7 +205,7 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
         );
       res
         .status(200)
-        .json({ status: true, message: "Tap out successful", path: fare.path });
+        .json({ status: true, message: "Tap out successful", path: fare.path ,cost:bal});
     } else {
       res.status(404).json({ message: "Card or station not found" });
     }

@@ -9,12 +9,15 @@ interface Station {
   geoLocation: [number, number];
   connections: string[];
 }
-
+interface Res {
+  fare: number;
+  path?: string[];
+}
 // Function to calculate fare using DFS
 export async function calculateFare(
   startStation: string,
   endStation: string
-): Promise<number> {
+): Promise<Res> {
   const db = await getConnection();
 
   try {
@@ -29,23 +32,24 @@ export async function calculateFare(
     console.log("start", start);
     console.log("end", end);
     if (!start || !end) {
-      return 0; // Invalid stations
+      return { fare: 0, path: undefined }; // Invalid stations
     }
 
     const visited: { [key: string]: boolean } = {};
     const path = await dfs(start._id, end._id, visited, []);
     console.log("path", path);
     if (path.length === 0) {
-      return 0; // No valid path
+      return { fare: 0, path: undefined }; // Invalid stations
     }
 
     // Replace with your actual fare calculation logic
-    const fare = calculateTotalDistance(path); // Sample fare calculation (replace with your logic)
+    const fare = await calculateTotalDistance(path); // Sample fare calculation (replace with your logic)
     console.log("fare", fare);
-    return fare;
+
+    return { fare: Number(fare), path: path };
   } catch (error) {
     console.error(error);
-    return 0;
+    return { fare: 0, path: undefined };
   }
 }
 

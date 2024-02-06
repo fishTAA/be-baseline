@@ -155,7 +155,7 @@ export const Tapin = async (req: express.Request, res: express.Response) => {
       await db
         .collection("CardsAcc")
         .updateOne({ cardNum }, { $set: { state: String(station._id) } });
-      res.status(200).json({ message: "Tap in successful", card });
+      res.status(200).json({ message: "Tap in successful" });
     } else {
       res.status(404).json({ message: "Card or station not found" });
     }
@@ -174,14 +174,25 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
 
     if (card) {
       const fare = await calculateFare(card.state, stationId);
-      const bal = Math.floor(fare) * 2;
+      if (card.Balance < fare.fare * 2) {
+        console.log("balance", card.Balnce);
+        return res
+          .status(404)
+          .json({
+            status: false,
+            message: "Card or doesnt have enough balance",
+          });
+      }
+      const bal = Math.floor(fare.fare) * 2;
       await db
         .collection("CardsAcc")
         .updateOne(
           { cardNum },
           { $set: { state: null }, $inc: { Balance: -bal } }
         );
-      res.status(200).json({ message: "Tap out successful", fare, card });
+      res
+        .status(200)
+        .json({ status: true, message: "Tap out successful", path: fare.path });
     } else {
       res.status(404).json({ message: "Card or station not found" });
     }

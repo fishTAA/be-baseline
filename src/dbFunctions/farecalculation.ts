@@ -32,24 +32,24 @@ export async function calculateFare(
     console.log("start", start);
     console.log("end", end);
     if (!start || !end) {
-      return { fare: 0, path: undefined }; // Invalid stations
+      return { fare: 0, path: [] }; // Invalid stations
     }
 
     const visited: { [key: string]: boolean } = {};
     const path = await dfs(start._id, end._id, visited, []);
     console.log("path", path);
     if (path.length === 0) {
-      return { fare: 0, path: undefined }; // Invalid stations
+      return { fare: 0, path: [] }; // Invalid stations
     }
 
     // Replace with your actual fare calculation logic
     const fare = await calculateTotalDistance(path); // Sample fare calculation (replace with your logic)
-    console.log("fare", fare);
+    console.log("distance", fare);
 
     return { fare: Number(fare), path: path };
   } catch (error) {
     console.error(error);
-    return { fare: 0, path: undefined };
+    return { fare: 0, path: [] };
   }
 }
 

@@ -177,15 +177,18 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
 
     if (card && setting) {
       const fare = await calculateFare(card.state, stationId);
-      const minimumfare = await setting.Fare;
+      const minimumfare = await setting.MinimumFare;
+      const fareperkm = await setting.Fare;
       if (card.Balance < fare.fare * minimumfare) {
         console.log("balance", card.Balnce);
         return res.status(404).json({
           status: false,
           message: "Card or doesnt have enough balance",
+          cost: 0,
+          path: [],
         });
       }
-      console.log(fare.path);
+      // console.log(fare.path);
       if (fare.path?.length === 0) {
         return res.status(404).json({
           status: false,
@@ -193,7 +196,7 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
           path: fare.path,
         });
       }
-      let bal = Math.floor(fare.fare) * minimumfare;
+      let bal = Math.floor(fare.fare) * fareperkm;
       if (bal < minimumfare) {
         bal = minimumfare;
       }
@@ -203,9 +206,12 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
           { cardNum },
           { $set: { state: null }, $inc: { Balance: -bal } }
         );
-      res
-        .status(200)
-        .json({ status: true, message: "Tap out successful", path: fare.path ,cost:bal});
+      res.status(200).json({
+        status: true,
+        message: "Tap out successful",
+        path: fare.path,
+        cost: bal,
+      });
     } else {
       res.status(404).json({ message: "Card or station not found" });
     }

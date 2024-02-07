@@ -44,7 +44,7 @@ export async function calculateFare(
 
     // Replace with your actual fare calculation logic
     const fare = await calculateTotalDistance(path); // Sample fare calculation (replace with your logic)
-    console.log("fare", fare);
+    console.log("distance", fare);
 
     return { fare: Number(fare), path: path };
   } catch (error) {

@@ -32,7 +32,7 @@ export const findData = async (
   return getConnection()
     .then(async (db) => {
       const c = await db.collection<card>(collection).findOne({ cardNum });
-      console.log(c);
+      // console.log(c);
       return c;
     })
     .catch((e) => {

@@ -179,13 +179,14 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
       const fare = await calculateFare(card.state, stationId);
       const minimumfare = await setting.MinimumFare;
       const fareperkm = await setting.Fare;
-      if (card.Balance < fare.fare * minimumfare) {
+      if (card.Balance < Math.round(fare.fare) + minimumfare) {
         console.log("balance", card.Balnce);
         return res.status(404).json({
           status: false,
-          message: "Card or doesnt have enough balance",
+          message: "Card  doesnt have enough balance",
           cost: 0,
           path: [],
+          distance: 0,
         });
       }
       // console.log(fare.path);
@@ -194,9 +195,10 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
           status: false,
           message: "Stations Are not Connected",
           path: fare.path,
+          distance: 0,
         });
       }
-      let bal = Math.floor(fare.fare) * fareperkm;
+      let bal = Math.round(fare.fare) * fareperkm + minimumfare;
       if (bal < minimumfare) {
         bal = minimumfare;
       }
@@ -211,6 +213,7 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
         message: "Tap out successful",
         path: fare.path,
         cost: bal,
+        distance: Math.round(fare.fare),
       });
     } else {
       res.status(404).json({ message: "Card or station not found" });

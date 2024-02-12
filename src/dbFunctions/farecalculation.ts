@@ -42,7 +42,6 @@ export async function calculateFare(
       return { fare: 0, path: [] }; // Invalid stations
     }
 
-    // Replace with your actual fare calculation logic
     const fare = await calculateTotalDistance(path); // Sample fare calculation (replace with your logic)
     console.log("distance", fare);
 
@@ -78,7 +77,7 @@ async function dfs(
 
   for (const neighbor of stationData.connections) {
     const neighborid = new ObjectId(neighbor);
-    console.log("neighbor", neighbor);
+    // console.log("neighbor", neighbor);
     if (!visited[String(neighbor)]) {
       const result = await dfs(neighborid, end, visited, path);
       if (result.length > 0) {

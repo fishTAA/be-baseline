@@ -12,6 +12,7 @@ import {
   updatestation,
 } from "../dbFunctions/stationDB";
 import { calculateFare } from "../dbFunctions/farecalculation";
+import { TransactionIn, TransactionOut } from "../dbFunctions/transactions";
 export const FindbyCoor = async (
   req: express.Request,
   res: express.Response
@@ -155,6 +156,8 @@ export const Tapin = async (req: express.Request, res: express.Response) => {
       await db
         .collection("CardsAcc")
         .updateOne({ cardNum }, { $set: { state: String(station._id) } });
+
+      TransactionIn(String(card._id), stationId);
       res.status(200).json({ message: "Tap in successful" });
     } else {
       res.status(404).json({ message: "Card or station not found" });
@@ -208,6 +211,7 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
           { cardNum },
           { $set: { state: null }, $inc: { Balance: -bal } }
         );
+      TransactionOut(String(card._id), stationId, bal, Math.round(fare.fare));
       res.status(200).json({
         status: true,
         message: "Tap out successful",

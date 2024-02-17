@@ -29,28 +29,26 @@ export const UpdateFare = async (
       return res.status(400).send("Cannot be a negative number");
     }
     const db = await getConnection();
-    const data = await db
-      .collection("settings")
-      .updateOne(
-        { Title: "Settings" },
-        {
-          $set: {
-            Fare: newpesokm,
-            Balance: newbal,
-            MinimumFare: newfare,
-            Operations: newoperation,
-          },
-        }
-      );
+    const data = await db.collection("settings").updateOne(
+      { Title: "Settings" },
+      {
+        $set: {
+          Fare: newpesokm,
+          Balance: newbal,
+          MinimumFare: newfare,
+          Operations: newoperation,
+        },
+      }
+    );
     // console.log("res",articles)
     if (data.modifiedCount > 0) {
       // The update was successful
       console.log("dadada", data);
-      return res.status(200).send("Succesfully updated");
+      return res.status(200).json({ message: "Succesfully updated" });
     } else {
       // No document was modified, indicating the update was unsuccessful
       console.log(data);
-      return res.status(400).send("Error updating fare");
+      return res.status(400).json(false);
     }
   } catch (error) {
     res.status(400).send(error);

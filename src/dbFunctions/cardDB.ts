@@ -16,7 +16,7 @@ export const deleteCard = async (cardnum: number) => {
     const deleteResult = await db
       .collection("CardsAcc")
       .deleteOne({ _id: card._id });
-    if (deleteResult.deletedCount && deleteTransaction.deletedCount > 0) {
+    if (deleteResult.deletedCount > 0) {
       // The deletion was successful
       console.log(deleteResult);
       return true;

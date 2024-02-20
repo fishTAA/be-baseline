@@ -1,5 +1,5 @@
 import express from "express";
-import { cardgen, findData } from "../db";
+import { cardgen, findData, getConnection } from "../db";
 import { checkcard, deleteCard, updateBalance } from "../dbFunctions/cardDB";
 import { getSingleStation } from "../dbFunctions/stationDB";
 import { error } from "console";
@@ -98,5 +98,25 @@ export const CardCollection = async (
     res.json(document);
   } else {
     res.status(404).json({ error: "Card not found." });
+  }
+};
+export const CheckCardState = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const db = await getConnection();
+    const collection = db.collection("CardsAcc");
+    const cardsWithState = await collection
+      .find({ state: { $ne: null } })
+      .toArray();
+    if (cardsWithState.length === 0) {
+      res.status(404).json([]);
+    } else {
+      res.json(cardsWithState);
+    }
+  } catch (error) {
+    console.error("Error finding cards:", error);
+    res.status(500).send("Internal Server Error");
   }
 };

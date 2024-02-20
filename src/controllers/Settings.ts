@@ -33,9 +33,9 @@ export const UpdateFare = async (
       { Title: "Settings" },
       {
         $set: {
-          Fare: newpesokm,
-          Balance: newbal,
-          MinimumFare: newfare,
+          Fare: Math.round(newpesokm),
+          Balance: Math.round(newbal),
+          MinimumFare: Math.round(newfare),
           Operations: newoperation,
         },
       }

@@ -1,5 +1,5 @@
 import express from "express";
-import { cardgen, findData} from "../db";
+import { cardgen, findData } from "../db";
 import { checkcard, deleteCard, updateBalance } from "../dbFunctions/cardDB";
 import { getSingleStation } from "../dbFunctions/stationDB";
 import { error } from "console";
@@ -9,7 +9,7 @@ import { station } from "../models";
 export const NewCard = async (req: express.Request, res: express.Response) => {
   try {
     const card = req.body.cardnum as number;
-    const bal = req.body.balance as number;
+    const bal = Math.round(req.body.balance as number);
     if (card === null) {
       return res.status(400);
     }
@@ -52,8 +52,9 @@ export const AddCardBal = async (
   try {
     const card = req.body.cardnum;
     const bal = req.body.balance;
+    const balance = Math.round(Number(bal));
     console.log(card, bal);
-    const document = await updateBalance(Number(card), Number(bal));
+    const document = await updateBalance(Number(card), balance);
     console.log(document);
     if (document) {
       res.status(200).json(true);
@@ -99,4 +100,3 @@ export const CardCollection = async (
     res.status(404).json({ error: "Card not found." });
   }
 };
-

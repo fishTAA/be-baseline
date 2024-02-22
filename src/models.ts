@@ -10,6 +10,7 @@ export interface card {
   cardNum: number;
   Balance: number;
   state?: boolean;
+  device?: string;
 }
 export interface user {
   userName: string;

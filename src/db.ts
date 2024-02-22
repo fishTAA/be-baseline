@@ -101,6 +101,7 @@ export const cardgen = (cardnum: number, balance: number) => {
         cardNum: cardnum,
         Balance: balance,
         state: null,
+        device:null,
       });
       return { id: res.insertedId };
     })

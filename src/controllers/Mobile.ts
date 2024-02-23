@@ -75,7 +75,28 @@ export const FindCard = async (req: express.Request, res: express.Response) => {
     if (!c) {
       return res.status(400).json({ state: false, mess: "Card not found" });
     }
-    
+
+    // If card is found, return it or do additional processing
+    return res.status(200).json({ state: true, mess: c });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ state: false, mess: "An error occurred" });
+  }
+};
+export const FindTransaction = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const cardid = req.params.id;
+  try {
+    const db = await getConnection();
+    const c = await db.collection("Transactions").findOne({ card: cardid });
+    if (!c) {
+      return res
+        .status(400)
+        .json({ state: false, mess: "Transaction not found" });
+    }
+
     // If card is found, return it or do additional processing
     return res.status(200).json({ state: true, mess: c });
   } catch (error) {

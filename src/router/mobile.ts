@@ -4,6 +4,7 @@ import {
   FindCard,
   FindTransaction,
   InsertNewCard,
+  UnlinkCard,
   getMobileRecord,
 } from "../controllers/Mobile";
 
@@ -13,4 +14,5 @@ export default (router: express.Router) => {
   router.get("/mobileusers/:id", getMobileRecord);
   router.get("/getCard/:id", FindCard);
   router.get("/gettrasaction/:id", FindTransaction);
+  router.post("/unlinkcard/:id", UnlinkCard);
 };

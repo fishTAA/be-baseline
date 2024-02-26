@@ -104,3 +104,48 @@ export const FindTransaction = async (
     return res.status(400).json({ state: false, mess: "An error occurred" });
   }
 };
+export const UnlinkCard = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const userid = req.params.id;
+  const cardIdsToRemove = req.body.cards; // Assuming an array of card IDs is passed in the request body
+
+  try {
+    // Connect to MongoDB
+    const db = await getConnection();
+
+    // Define the collections
+    const mobileUsersCollection = await db.collection("MobileUsers");
+    const cardsCollection = await db.collection("CardsAcc");
+
+    // Update the MobileUsers document to remove the specified cards from the array
+    const result = await mobileUsersCollection.updateOne(
+      { id: userid },
+      { $pull: { cards: { $in: cardIdsToRemove.map(String) } } }
+    );
+    // Update the device field to null for each card
+    const cardUpdatePromises = cardIdsToRemove.map(async (cardId: number) => {
+      const card = await cardsCollection.findOne({ cardNum: cardId });
+      if (card) {
+        return cardsCollection.updateOne(
+          { _id: card._id },
+          { $set: { device: null } }
+        );
+      }
+      return null;
+    });
+
+    // Execute all card update operations
+    await Promise.all(cardUpdatePromises);
+    // Check if the update was successful
+    if (result.modifiedCount >= 1) {
+      res.status(200).json({ message: "Cards removed successfully" });
+    } else {
+      res.status(404).json({ message: "Cards not found" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

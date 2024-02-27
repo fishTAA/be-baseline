@@ -110,7 +110,7 @@ export const UnlinkCard = async (
 ) => {
   const userid = req.params.id;
   const cardIdsToRemove = req.body.cards; // Assuming an array of card IDs is passed in the request body
-
+  console.log("unlinking cards:", cardIdsToRemove);
   try {
     // Connect to MongoDB
     const db = await getConnection();
@@ -118,15 +118,19 @@ export const UnlinkCard = async (
     // Define the collections
     const mobileUsersCollection = await db.collection("MobileUsers");
     const cardsCollection = await db.collection("CardsAcc");
-
+    const cardids = await Promise.all(
+      cardIdsToRemove.map(async (cardId: number) => {
+        const cards = await cardsCollection.findOne({ cardNum: cardId });
+        return cards;
+      })
+    );
     // Update the MobileUsers document to remove the specified cards from the array
     const result = await mobileUsersCollection.updateOne(
       { id: userid },
-      { $pull: { cards: { $in: cardIdsToRemove.map(String) } } }
+      { $pull: { cards: { $in: cardids.map((card) => String(card._id)) } } }
     );
     // Update the device field to null for each card
-    const cardUpdatePromises = cardIdsToRemove.map(async (cardId: number) => {
-      const card = await cardsCollection.findOne({ cardNum: cardId });
+    const cardUpdatePromises = cardids.map((card) => {
       if (card) {
         return cardsCollection.updateOne(
           { _id: card._id },
@@ -140,12 +144,12 @@ export const UnlinkCard = async (
     await Promise.all(cardUpdatePromises);
     // Check if the update was successful
     if (result.modifiedCount >= 1) {
-      res.status(200).json({ message: "Cards removed successfully" });
+      res.status(200).json({ mess: "Cards removed successfully", state: true });
     } else {
-      res.status(404).json({ message: "Cards not found" });
+      res.status(404).json({ mes: "Cards not found", state: false });
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ mess: "Internal Server Error", state: false });
   }
 };

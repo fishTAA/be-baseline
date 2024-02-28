@@ -158,13 +158,13 @@ export const Tapin = async (req: express.Request, res: express.Response) => {
         .updateOne({ cardNum }, { $set: { state: String(station._id) } });
 
       TransactionIn(String(card._id), stationId);
-      res.status(200).json({ message: "Tap in successful" });
+      res.status(200).json({ message: "Tap in successful",state:true });
     } else {
-      res.status(404).json({ message: "Card or station not found" });
+      res.status(404).json({ message: "Card or station not found",state:false });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error",state:false });
   }
 };
 export const Tapout = async (req: express.Request, res: express.Response) => {

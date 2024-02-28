@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import express from "express";
 import dotenv from "dotenv";
+import { GetSetting } from "../controllers/Settings";
+import { getConnection } from "../db";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || "";
@@ -44,6 +46,28 @@ export const isAuthenticated = async (
     console.log(error, token);
     return res.status(401).json({
       message: "Unauthorized - Token is invalid or tampered with",
+    });
+  }
+};
+export const isOperational = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const db = await getConnection();
+    const data = await db.collection("settings").findOne({ Title: "Settings" });
+    if (!data) {
+      return res.status(401).json({ message: "Settings not found" });
+    }
+    if (!data.Operations) {
+      return res.status(401).json({ message: "Operations are halted" });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      message: `Error at checking operations:${error}`,
     });
   }
 };

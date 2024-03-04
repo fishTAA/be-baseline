@@ -31,14 +31,16 @@ export const InsertNewCard = async (
     const newCard = req.body.newCard;
     console.log("inserting card", newCard, "to", id);
     if (!newCard || !newCard) {
-      return res.status(400).json({ message: "Card name is required" });
+      return res
+        .status(400)
+        .json({ message: "Card name is required", state: false });
     }
     const ret = await InsertCard(id, newCard);
     console.log("ret", ret);
     if (ret.state) {
-      return res.status(200).json({ ret });
+      return res.status(200).json(ret);
     }
-    return res.status(400).json({ ret });
+    return res.status(400).json(ret);
   } catch (e) {
     console.error(e);
     return res.status(400).json({ state: false, mess: e });
@@ -109,7 +111,8 @@ export const UnlinkCard = async (
   res: express.Response
 ) => {
   const userid = req.params.id;
-  const cardIdsToRemove = req.body.cards; // Assuming an array of card IDs is passed in the request body
+  const cardIdsToRemove = req.body.cards;
+  const deletedata = req.body.deletedata;
   console.log("unlinking cards:", cardIdsToRemove);
   try {
     // Connect to MongoDB
@@ -142,6 +145,16 @@ export const UnlinkCard = async (
 
     // Execute all card update operations
     await Promise.all(cardUpdatePromises);
+    if (deletedata) {
+      const result = await mobileUsersCollection.deleteOne({ id: userid });
+      if (result.deletedCount > 0) {
+        return res.status(200).json({ mess: "Deleted User", state: true });
+      }
+      return res
+        .status(400)
+        .json({ mess: "Failed to Delete User", state: false });
+    }
+
     // Check if the update was successful
     if (result.modifiedCount >= 1) {
       res.status(200).json({ mess: "Cards removed successfully", state: true });

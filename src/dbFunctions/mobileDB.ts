@@ -33,6 +33,7 @@ export const InsertCard = async (id: string, card: number) => {
   try {
     const db = await getConnection();
     const card1 = await db.collection("CardsAcc").findOne({ cardNum: card });
+    console.log(card1);
     if (!card1) {
       return { state: false, mess: "Card Not found" };
     }
@@ -54,4 +55,3 @@ export const InsertCard = async (id: string, card: number) => {
     return { state: false, mess: "An error occurred" };
   }
 };
-

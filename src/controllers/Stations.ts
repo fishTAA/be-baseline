@@ -147,10 +147,9 @@ export const Tapin = async (req: express.Request, res: express.Response) => {
   const cardNum = req.body.cardNum;
   const stationId = req.body.stationId;
   const db = await getConnection();
-  const objid = new ObjectId(stationId);
   try {
     const card = await db.collection("CardsAcc").findOne({ cardNum });
-    const station = await db.collection("Stations").findOne({ _id: objid });
+    const station = await db.collection("Stations").findOne({ _id: stationId });
 
     if (card && station) {
       await db
@@ -158,13 +157,15 @@ export const Tapin = async (req: express.Request, res: express.Response) => {
         .updateOne({ cardNum }, { $set: { state: String(station._id) } });
 
       TransactionIn(String(card._id), stationId);
-      res.status(200).json({ message: "Tap in successful",state:true });
+      res.status(200).json({ message: "Tap in successful", state: true });
     } else {
-      res.status(404).json({ message: "Card or station not found",state:false });
+      res
+        .status(404)
+        .json({ message: "Card or station not found", state: false });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal Server Error",state:false });
+    res.status(500).json({ message: "Internal Server Error", state: false });
   }
 };
 export const Tapout = async (req: express.Request, res: express.Response) => {

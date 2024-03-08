@@ -192,7 +192,7 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
       .collection("settings")
       .findOne({ Title: "Settings" });
     if (card) {
-      if (card.state !== null) {
+      if (card.state === null) {
         return res.status(404).json({
           status: false,
           message: "Card is not tapin",

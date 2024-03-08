@@ -152,7 +152,18 @@ export const Tapin = async (req: express.Request, res: express.Response) => {
     const station = await db
       .collection("Stations")
       .findOne({ _id: new ObjectId(stationId) });
-
+    if (!card && !station) {
+      return res
+        .status(404)
+        .json({ message: "Card or station not found", state: false });
+    }
+    if (card) {
+      if (card.state !== null) {
+        return res
+          .status(404)
+          .json({ message: "Card or station not found", state: false });
+      }
+    }
     if (card && station) {
       await db
         .collection("CardsAcc")
@@ -180,7 +191,17 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
     const setting = await db
       .collection("settings")
       .findOne({ Title: "Settings" });
-
+    if (card) {
+      if (card.state !== null) {
+        return res.status(404).json({
+          status: false,
+          message: "Card is not tapin",
+          cost: 0,
+          path: [],
+          distance: 0,
+        });
+      }
+    }
     if (card && setting) {
       const fare = await calculateFare(card.state, stationId);
       const minimumfare = await setting.MinimumFare;

@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  CheckConnections,
   CheckStationDistance,
   DeleteStation,
   FindbyCoor,
@@ -17,6 +18,7 @@ export default (router: express.Router) => {
   router.post("/updateStations", isAuthenticated, UpdateStation);
   router.post("/checkDistance", isAuthenticated, CheckStationDistance);
   router.delete("/deleteStation/:id", isAuthenticated, DeleteStation);
-  router.post("/station/tapin",isOperational, Tapin);
-  router.post("/station/tapout",isOperational, Tapout);
+  router.post("/station/tapin", isOperational, Tapin);
+  router.post("/station/tapout", isOperational, Tapout);
+  router.get("/checkconnection", isAuthenticated, CheckConnections);
 };

@@ -1,6 +1,6 @@
 import express from "express";
 import { findStation, getConnection } from "../db";
-import { ObjectId } from "mongodb";
+import { ObjectId, WithId } from "mongodb";
 import { Setting, station } from "../models";
 import {
   CheckDistance,
@@ -226,5 +226,31 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const CheckConnections = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const db = await getConnection();
+    const articleC = await db.collection("Stations").find({});
+    const stations = await articleC.toArray();
+
+    // Check if any station has empty connections
+    const hasEmptyConnections = stations.some(
+      (station) =>
+        !station.connections ||
+        station.connections.length === 0 ||
+        station.connections.some((connection: string[]) => !connection)
+    );
+    console.log(hasEmptyConnections);
+    return res.status(200).json(hasEmptyConnections);
+  } catch (e) {
+    console.error(e);
+    return res
+      .status(400)
+      .json({ error: "An error occurred while checking connections" });
   }
 };

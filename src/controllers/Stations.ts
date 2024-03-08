@@ -149,7 +149,9 @@ export const Tapin = async (req: express.Request, res: express.Response) => {
   const db = await getConnection();
   try {
     const card = await db.collection("CardsAcc").findOne({ cardNum });
-    const station = await db.collection("Stations").findOne({ _id: stationId });
+    const station = await db
+      .collection("Stations")
+      .findOne({ _id: new ObjectId(stationId) });
 
     if (card && station) {
       await db

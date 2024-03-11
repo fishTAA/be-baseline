@@ -16,6 +16,17 @@ export const deleteCard = async (cardnum: number) => {
     const deleteResult = await db
       .collection("CardsAcc")
       .deleteOne({ _id: card._id });
+    // Convert the document ID to ObjectId
+    const query = { id: card.device };
+
+    // Update the document using $pull to remove the specific card ID from the cards array
+    const updateOperation = {
+      $pull: { cards: String(card._id) },
+    };
+    const result = await db
+      .collection("MobileUsers")
+      .updateOne(query, updateOperation);
+    console.log('Removing from mobile users',result)
     if (deleteResult.deletedCount > 0) {
       // The deletion was successful
       console.log(deleteResult);

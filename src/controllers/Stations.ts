@@ -210,7 +210,7 @@ export const Tapout = async (req: express.Request, res: express.Response) => {
         console.log("balance", card.Balnce);
         return res.status(404).json({
           status: false,
-          message: "Card  doesnt have enough balance",
+          message: "Card  doesn't have enough balance",
           cost: 0,
           path: [],
           distance: 0,
